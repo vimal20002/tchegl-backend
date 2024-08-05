@@ -77,3 +77,25 @@ export const placeOrder =   async (req, res) => {
       res.status(500).json({ message: 'Server error' });
     }
   };
+  export const deleteFromCart = async (req, res) => {
+    const { itemId } = req.params;
+    const token = req.headers.authorization?.split(' ')[1];
+  
+    if (!token) return res.status(401).json({ message: 'Unauthorized' });
+  
+    try {
+      // Get the cart of the user (assuming user ID is in token or session)
+      const cart = await Cart.findOne({ 'items._id': itemId });
+  
+      if (!cart) return res.status(404).json({ message: 'Cart not found' });
+  
+      // Remove the item from the cart
+      cart.items = cart.items.filter(item => item._id.toString() !== itemId);
+  
+      await cart.save();
+      res.status(200).json({ message: 'Item removed from cart' });
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
